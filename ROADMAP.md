@@ -83,8 +83,8 @@ cargo run -- mon-fichier.json    # ✅
 cargo run mon-fichier.json       # ❌ cargo croit que c'est pour lui
 ```
 
-- [ ] `cargo run` affiche quelque chose
-- [ ] j'ai créé un `data.json` de test à la racine (celui d'Alice et Bob ci-dessus)
+- [x] `cargo run` affiche quelque chose
+- [x] j'ai créé un `data.json` de test à la racine (celui d'Alice et Bob ci-dessus)
 
 ---
 
