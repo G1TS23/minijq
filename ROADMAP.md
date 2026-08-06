@@ -116,8 +116,8 @@ let contenu = match std::fs::read_to_string(chemin) {
 let contenu = std::fs::read_to_string(chemin)?;
 ```
 
-- [ ] ça marche avec un fichier existant
-- [ ] ça affiche une erreur propre (sans crash brutal) avec un fichier inexistant
+- [x] ça marche avec un fichier existant
+- [x] ça affiche une erreur propre (sans crash brutal) avec un fichier inexistant
 
 **Bonus :** lire depuis l'entrée standard quand aucun fichier n'est donné, pour pouvoir faire
 `curl ... | minijq`. Chercher `std::io::stdin().read_to_string()`.
