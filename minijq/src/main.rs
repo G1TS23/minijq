@@ -1,3 +1,5 @@
+mod value;
+
 use std::io::IsTerminal;
 use std::io::Read;
 

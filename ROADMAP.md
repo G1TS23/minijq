@@ -150,8 +150,8 @@ contient des `Value`, un objet associe des `String` à des `Value`).
 un `Value` directement ne compilerait pas ? La réponse explique comment Rust range les choses en
 mémoire — exactement ce que Java cache.
 
-- [ ] je peux construire à la main, dans `main.rs`, la valeur correspondant à `{"name": "Alice"}`
-- [ ] et l'afficher avec `{:#?}`
+- [x] je peux construire à la main, dans `main.rs`, la valeur correspondant à `{"name": "Alice"}`
+- [x] et l'afficher avec `{:#?}`
 
 ---
 
