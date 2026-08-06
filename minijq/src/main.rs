@@ -1,15 +1,27 @@
+use std::io::IsTerminal;
 use std::io::Read;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args();
 
-    if let Some(path) = args.nth(1) {
-        let file_content = std::fs::read_to_string(path)?;
-        println!("{}", file_content);
-        Ok(())
-    } else {
-        eprintln!("Missing argument:");
-        eprintln!("Usage: mini-jq <file>");
-        std::process::exit(1)
-    }
+    let input = match args.nth(1) {
+        Some(path) => std::fs::read_to_string(path)?,
+        None if std::io::stdin().is_terminal() => {
+            eprintln!("No file or stdin. Try: mini-jq <file>");
+            std::process::exit(1)
+        }
+        None => {
+            let mut buffer = String::new();
+            std::io::stdin().read_to_string(&mut buffer)?;
+            if buffer.is_empty() {
+                eprintln!("Content empty. Try: mini-jq <file> or via stdin: echo '...' | mini-jq");
+                std::process::exit(1)
+            } else {
+                buffer
+            }
+        }
+    };
+
+    println!("{}", input);
+    Ok(())
 }
