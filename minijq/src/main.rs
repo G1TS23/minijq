@@ -1,5 +1,7 @@
+mod parser;
 mod value;
 
+use crate::parser::Parser;
 use std::io::IsTerminal;
 use std::io::Read;
 
@@ -23,7 +25,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     };
-
-    println!("{}", input);
+    let mut parser = Parser::new(&input);
+    let value = parser.parse()?;
+    println!("parsed value :{:#?}", value);
     Ok(())
 }

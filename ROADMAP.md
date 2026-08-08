@@ -107,7 +107,7 @@ exceptions. Une fonction qui peut échouer le déclare dans son type de retour, 
 
 **Le déclic à avoir.** Ces deux écritures sont identiques — comprendre pourquoi le `?` existe :
 
-```rust
+```
 let contenu = match std::fs::read_to_string(chemin) {
     Ok(c) => c,
     Err(e) => return Err(e.into()),
@@ -177,14 +177,14 @@ précisément ce qu'on optimisera à l'étape 7.
 
 **Dans cet ordre, un sous-objectif à la fois :**
 
-- [ ] 1. `null` → comparer des caractères, avancer `pos`
-- [ ] 2. `true` / `false` → idem, mais deux cas
-- [ ] 3. les nombres `42`, `-3.14` → accumuler des caractères, `.parse::<f64>()`
-- [ ] 4. les chaînes `"abc"` → boucle jusqu'au guillemet fermant
-- [ ] 5. les espaces / retours à la ligne → une méthode `skip_whitespace()`
-- [ ] 6. les tableaux `[1, 2]` → **la récursion** : lire un tableau = lire des valeurs
-- [ ] 7. les objets `{"a": 1}` → idem, avec clé + `:`
-- [ ] 8. les échappements `\n`, `\"`, `\\` → cas particuliers dans les chaînes
+- [x] `null` → comparer des caractères, avancer `pos`
+- [x] `true` / `false` → idem, mais deux cas
+- [ ] les nombres `42`, `-3.14` → accumuler des caractères, `.parse::<f64>()`
+- [ ] les chaînes `"abc"` → boucle jusqu'au guillemet fermant
+- [ ] les espaces / retours à la ligne → une méthode `skip_whitespace()`
+- [ ] les tableaux `[1, 2]` → **la récursion** : lire un tableau = lire des valeurs
+- [ ] les objets `{"a": 1}` → idem, avec clé + `:`
+- [ ] les échappements `\n`, `\"`, `\\` → cas particuliers dans les chaînes
 
 **Écrire un test dès le sous-objectif 1.** En bas du fichier :
 
