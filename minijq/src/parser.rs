@@ -63,6 +63,10 @@ impl Parser {
                 self.eat(FALSE)?;
                 Value::Bool(false)
             }
+            Some(c) if c.is_ascii_digit() || c == '-' => {
+                let float = self.parse_number()?;
+                Value::Number(float)
+            }
             Some(c) => {
                 return Err(format!(
                     "unexpected character {:?} at position {}",
@@ -72,6 +76,23 @@ impl Parser {
             None => return Err(format!("end of file at position {}", self.pos)),
         };
         Ok(value)
+    }
+
+    fn parse_number(&mut self) -> Result<f64, String> {
+        let initial_pos = self.pos;
+        let mut number: String = self.chars[self.pos].to_string();
+        self.bump();
+        while let Some(n) = self.peek() {
+            if !(n.is_ascii_digit() || n == '.' || n == 'e' || n == 'E' || n == '+' || n == '-') {
+                break;
+            }
+            number.push(n);
+            self.bump();
+        }
+        let float: f64 = number
+            .parse::<f64>()
+            .map_err(|_| format!("invalid number {:?} at position {}", number, initial_pos))?;
+        Ok(float)
     }
 }
 
@@ -113,5 +134,51 @@ mod tests {
     #[test]
     fn refuse_other_chars() {
         assert!(Parser::new("a").parse().is_err());
+    }
+
+    #[test]
+    fn lit_number() {
+        assert_eq!(Parser::new("42").parse(), Ok(Value::Number(42.0)));
+    }
+    #[test]
+    fn lit_number_with_spaces() {
+        assert_eq!(Parser::new(" 42").parse(), Ok(Value::Number(42.0)));
+    }
+
+    #[test]
+    fn lit_number_with_decimals() {
+        assert_eq!(Parser::new("42.34").parse(), Ok(Value::Number(42.34)));
+    }
+
+    #[test]
+    fn lit_negative_number() {
+        assert_eq!(Parser::new("-42").parse(), Ok(Value::Number(-42.0)));
+    }
+
+    #[test]
+    fn lit_negative_number_with_decimals() {
+        assert_eq!(Parser::new("-42.34").parse(), Ok(Value::Number(-42.34)));
+    }
+
+    #[test]
+    fn lit_exponential_notation() {
+        for (input, expected) in [
+            ("42e10", 42e10),
+            ("42E-10", 42e-10),
+            ("42.34e+10", 42.34e10),
+        ] {
+            assert_eq!(
+                Parser::new(input).parse(),
+                Ok(Value::Number(expected)),
+                "input : {input}"
+            );
+        }
+    }
+
+    #[test]
+    fn lit_wrong_numbers() {
+        for (input) in ["42..", "42.0.3", "42.0.", "-", "1e", "1-2"] {
+            assert!(Parser::new("input").parse().is_err(), "input : {input}");
+        }
     }
 }
