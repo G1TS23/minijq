@@ -180,8 +180,8 @@ précisément ce qu'on optimisera à l'étape 7.
 - [x] `null` → comparer des caractères, avancer `pos`
 - [x] `true` / `false` → idem, mais deux cas
 - [x] les nombres `42`, `-3.14` → accumuler des caractères, `.parse::<f64>()`
-- [ ] les chaînes `"abc"` → boucle jusqu'au guillemet fermant
-- [ ] les espaces / retours à la ligne → une méthode `skip_whitespace()`
+- [x] les chaînes `"abc"` → boucle jusqu'au guillemet fermant
+- [x] les espaces / retours à la ligne → une méthode `skip_whitespace()`
 - [ ] les tableaux `[1, 2]` → **la récursion** : lire un tableau = lire des valeurs
 - [ ] les objets `{"a": 1}` → idem, avec clé + `:`
 - [ ] les échappements `\n`, `\"`, `\\` → cas particuliers dans les chaînes

@@ -63,6 +63,10 @@ impl Parser {
                 self.eat(FALSE)?;
                 Value::Bool(false)
             }
+            Some('"') => {
+                let string = self.parse_string()?;
+                Value::String(string)
+            }
             Some(c) if c.is_ascii_digit() || c == '-' => {
                 let float = self.parse_number()?;
                 Value::Number(float)
@@ -93,6 +97,46 @@ impl Parser {
             .parse::<f64>()
             .map_err(|_| format!("invalid number {:?} at position {}", number, initial_pos))?;
         Ok(float)
+    }
+
+    fn parse_string(&mut self) -> Result<String, String> {
+        let initial_pos = self.pos;
+        self.bump();
+        let mut string = String::new();
+        let mut terminated = false;
+        while let Some(c) = self.peek() {
+            if c == '"' {
+                terminated = true;
+                self.bump();
+                break;
+            } else if c == '\\' {
+                self.bump();
+                let decoded = match self.peek() {
+                    Some('"') => '"',
+                    Some('\\') => '\\',
+                    Some('/') => '/',
+                    Some('n') => '\n',
+                    Some('t') => '\t',
+                    Some('r') => '\r',
+                    Some('b') => '\u{0008}',
+                    Some('f') => '\u{000C}',
+                    //TODO: add support for unicode escape
+                    Some(other) => {
+                        return Err(format!("invalid escape \\{other} at position {}", self.pos));
+                    }
+                    None => return Err(format!("unterminated string started at {initial_pos}")),
+                };
+                string.push(decoded);
+                self.bump();
+            } else {
+                string.push(c);
+                self.bump();
+            }
+        }
+        if !terminated {
+            return Err(format!("unterminated string started at {}", initial_pos));
+        }
+        Ok(string)
     }
 }
 
@@ -180,5 +224,95 @@ mod tests {
         for (input) in ["42..", "42.0.3", "42.0.", "-", "1e", "1-2"] {
             assert!(Parser::new("input").parse().is_err(), "input : {input}");
         }
+    }
+
+    #[test]
+    fn lit_string() {
+        assert_eq!(
+            Parser::new("\"abc\"").parse(),
+            Ok(Value::String("abc".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_empty_string() {
+        assert_eq!(
+            Parser::new("\"\"").parse(),
+            Ok(Value::String("".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_spaces() {
+        assert_eq!(
+            Parser::new(" \"abc\"").parse(),
+            Ok(Value::String("abc".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_quotes() {
+        assert_eq!(
+            Parser::new("\"abc\\\"def\"").parse(),
+            Ok(Value::String("abc\"def".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_backslash() {
+        assert_eq!(
+            Parser::new("\"abc\\\\def\"").parse(),
+            Ok(Value::String("abc\\def".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_newline() {
+        assert_eq!(
+            Parser::new("\"abc\\ndef\"").parse(),
+            Ok(Value::String("abc\ndef".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_tab() {
+        assert_eq!(
+            Parser::new("\"abc\\tdef\"").parse(),
+            Ok(Value::String("abc\tdef".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_return() {
+        assert_eq!(
+            Parser::new("\"abc\\rdef\"").parse(),
+            Ok(Value::String("abc\rdef".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_backspace() {
+        assert_eq!(
+            Parser::new("\"abc\\bdef\"").parse(),
+            Ok(Value::String("abc\u{0008}def".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_escaped_formfeed() {
+        assert_eq!(
+            Parser::new("\"abc\\fdef\"").parse(),
+            Ok(Value::String("abc\u{000C}def".to_string()))
+        );
+    }
+
+    #[test]
+    fn lit_string_with_unexpected_escape() {
+        assert!(Parser::new("\"abc\\gdef\"").parse().is_err());
+    }
+
+    #[test]
+    fn lit_unfinished_string() {
+        assert!(Parser::new("\"abc").parse().is_err());
     }
 }
