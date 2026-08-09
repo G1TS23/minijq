@@ -70,6 +70,10 @@ impl Parser {
                 let string = self.parse_string()?;
                 Value::String(string)
             }
+            Some('[') => {
+                let array = self.parse_array()?;
+                Value::Array(array)
+            }
             Some(c) if c.is_ascii_digit() || c == '-' => {
                 let float = self.parse_number()?;
                 Value::Number(float)
@@ -123,7 +127,7 @@ impl Parser {
                     Some('r') => '\r',
                     Some('b') => '\u{0008}',
                     Some('f') => '\u{000C}',
-                    //TODO: add support for unicode escape
+                    //TODO: add support for Unicode escape
                     Some(other) => {
                         return Err(format!("invalid escape \\{other} at position {}", self.pos));
                     }
@@ -140,5 +144,50 @@ impl Parser {
             return Err(format!("unterminated string started at {}", initial_pos));
         }
         Ok(string)
+    }
+
+    fn parse_array(&mut self) -> Result<Vec<Value>, String> {
+        let initial_pos = self.pos;
+        self.bump();
+        self.skip_ws();
+        let mut array = Vec::new();
+        match self.peek() {
+            Some(']') => {
+                self.bump();
+                return Ok(array);
+            }
+            Some(',') => return Err(format!("unexpected comma at position {}", self.pos)),
+            Some(_) => (),
+            None => return Err(format!("unterminated array started at {}", initial_pos)),
+        }
+        loop {
+            array.push(self.parse()?);
+            self.skip_ws();
+            match self.peek() {
+                Some(']') => {
+                    self.bump();
+                    break;
+                }
+                Some(',') => {
+                    self.bump();
+                    self.skip_ws();
+                    match self.peek() {
+                        Some(',') => {
+                            return Err(format!("unexpected comma at position {}", self.pos));
+                        }
+                        Some(']') => {
+                            return Err(format!("unexpected bracket at position {}", self.pos));
+                        }
+                        Some(_) => (),
+                        None => {
+                            return Err(format!("unterminated array started at {}", initial_pos));
+                        }
+                    }
+                }
+                Some(_) => return Err(format!("expected ] or , at position {}", self.pos)),
+                None => return Err(format!("unterminated array started at {}", initial_pos)),
+            }
+        }
+        Ok(array)
     }
 }
