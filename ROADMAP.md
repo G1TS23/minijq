@@ -183,8 +183,8 @@ précisément ce qu'on optimisera à l'étape 7.
 - [x] les chaînes `"abc"` → boucle jusqu'au guillemet fermant
 - [x] les espaces / retours à la ligne → une méthode `skip_whitespace()`
 - [x] les tableaux `[1, 2]` → **la récursion** : lire un tableau = lire des valeurs
-- [ ] les objets `{"a": 1}` → idem, avec clé + `:`
-- [ ] les échappements `\n`, `\"`, `\\` → cas particuliers dans les chaînes
+- [x] les objets `{"a": 1}` → idem, avec clé + `:`
+- [x] les échappements `\n`, `\"`, `\\` → cas particuliers dans les chaînes
 
 **Écrire un test dès le sous-objectif 1.** En bas du fichier :
 

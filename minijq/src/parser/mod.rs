@@ -1,4 +1,5 @@
 use crate::value::Value;
+use std::collections::BTreeMap;
 
 #[cfg(test)]
 mod tests;
@@ -74,6 +75,10 @@ impl Parser {
                 let array = self.parse_array()?;
                 Value::Array(array)
             }
+            Some('{') => {
+                let object = self.parse_object()?;
+                Value::Object(object)
+            }
             Some(c) if c.is_ascii_digit() || c == '-' => {
                 let float = self.parse_number()?;
                 Value::Number(float)
@@ -90,6 +95,7 @@ impl Parser {
     }
 
     fn parse_number(&mut self) -> Result<f64, String> {
+        self.skip_ws();
         let initial_pos = self.pos;
         let mut number: String = self.chars[self.pos].to_string();
         self.bump();
@@ -107,6 +113,7 @@ impl Parser {
     }
 
     fn parse_string(&mut self) -> Result<String, String> {
+        self.skip_ws();
         let initial_pos = self.pos;
         self.bump();
         let mut string = String::new();
@@ -189,5 +196,58 @@ impl Parser {
             }
         }
         Ok(array)
+    }
+
+    fn parse_object(&mut self) -> Result<BTreeMap<String, Value>, String> {
+        let initial_pos = self.pos;
+        self.bump();
+        self.skip_ws();
+        let mut object: BTreeMap<String, Value> = BTreeMap::new();
+        if self.peek() == Some('}') {
+            self.bump();
+            return Ok(object);
+        }
+        loop {
+            self.skip_ws();
+            let key = match self.peek() {
+                Some('"') => self.parse_string()?,
+                Some(_) => return Err(format!("expected '\"' at position {}", self.pos)),
+                None => return Err(format!("unterminated Object at {}", initial_pos)),
+            };
+            self.skip_ws();
+            let value = match self.peek() {
+                Some(':') => {
+                    self.bump();
+                    self.skip_ws();
+                    self.parse()?
+                }
+                Some(_) => return Err(format!("expected ':' at position {}", self.pos)),
+                None => {
+                    return Err(format!("unterminated Object started at {}", initial_pos));
+                }
+            };
+            if object.contains_key(&key) {
+                return Err(format!("duplicate key {:?} at position {}", key, self.pos));
+            } else {
+                object.insert(key, value);
+            }
+            self.skip_ws();
+            match self.peek() {
+                Some(',') => {
+                    self.bump();
+                }
+                Some('}') => {
+                    self.bump();
+                    break;
+                }
+                Some(_) => {
+                    return Err(format!("expected {} or , at {}", '}', self.pos));
+                }
+                None => {
+                    return Err(format!("unterminated Object started at {}", initial_pos));
+                }
+            };
+        }
+        Ok(object)
     }
 }

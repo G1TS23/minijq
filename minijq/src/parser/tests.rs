@@ -1,4 +1,5 @@
 use super::*;
+use std::collections::BTreeMap;
 
 //NULL
 #[test]
@@ -299,4 +300,93 @@ fn lit_with_malformed_arrays() {
     assert!(Parser::new("[[1]").parse().is_err());
     let err = Parser::new("[1 2]").parse().unwrap_err();
     assert!(err.contains("expected ] or ,"), "message inattendu : {err}");
+}
+
+//OBJECT
+#[test]
+fn lit_object() {
+    let mut object: BTreeMap<String, Value> = BTreeMap::new();
+    let value: Value = Value::String("bob".to_string());
+    object.insert("name".to_string(), value);
+    assert_eq!(
+        Parser::new("{\"name\":\"bob\"}").parse(),
+        Ok(Value::Object(object))
+    );
+}
+
+#[test]
+fn lit_object_with_line_breaks() {
+    let mut object: BTreeMap<String, Value> = BTreeMap::new();
+    let value: Value = Value::String("bob".to_string());
+    object.insert("name".to_string(), value);
+    assert_eq!(
+        Parser::new("{\n \"name\":\"bob\"  \n}").parse(),
+        Ok(Value::Object(object))
+    );
+}
+
+#[test]
+fn lit_object_with_same_key() {
+    assert!(
+        Parser::new("{ \"name\":\"bob\" , \"name\":\"bob\" }")
+            .parse()
+            .is_err()
+    );
+}
+
+#[test]
+fn lit_object_list() {
+    let mut object: BTreeMap<String, Value> = BTreeMap::new();
+    let name_value: Value = Value::String("bob".to_string());
+    let age_value: Value = Value::Number(21.0);
+    object.insert("name".to_string(), name_value);
+    object.insert("age".to_string(), age_value);
+    assert_eq!(
+        Parser::new("{  \"name\": \"bob\"   ,   \"age\" : 21.0  }  ").parse(),
+        Ok(Value::Object(object))
+    );
+}
+
+#[test]
+fn lit_object_in_object() {
+    let mut object1: BTreeMap<String, Value> = BTreeMap::new();
+    let mut object2: BTreeMap<String, Value> = BTreeMap::new();
+    let age_value: Value = Value::Number(21.0);
+    object2.insert("age".to_string(), age_value);
+    object1.insert("name".to_string(), Value::Object(object2));
+    assert_eq!(
+        Parser::new("{\"name\":{\"age\":21.0 }   }").parse(),
+        Ok(Value::Object(object1))
+    );
+}
+
+#[test]
+fn lit_object_with_deep_imbrication() {
+    let mut object: BTreeMap<String, Value> = BTreeMap::new();
+    let mut object2: BTreeMap<String, Value> = BTreeMap::new();
+    let mut object3: BTreeMap<String, Value> = BTreeMap::new();
+    let age_value: Value = Value::Number(21.0);
+    object3.insert("age".to_string(), age_value);
+    object2.insert("name".to_string(), Value::Object(object3));
+    object.insert("person".to_string(), Value::Object(object2));
+    assert_eq!(
+        Parser::new("{ \"person\"   : {\"name\" :{\"age\":21.0}}}").parse(),
+        Ok(Value::Object(object))
+    )
+}
+
+#[test]
+fn lit_with_malformed_objects() {
+    assert!(Parser::new("{").parse().is_err());
+    assert!(Parser::new("{,}").parse().is_err());
+    assert!(Parser::new("{\"name\"").parse().is_err());
+    assert!(Parser::new("{\"name\" :").parse().is_err());
+    assert!(Parser::new("{ \"name\"}").parse().is_err());
+    assert!(Parser::new("{ \"name\" \"bob\"}").parse().is_err());
+    assert!(Parser::new("{\"name\" : \"bob\",}").parse().is_err());
+    assert!(
+        Parser::new("{\"name\" : \"bob\" \"age\" : 21.0 }")
+            .parse()
+            .is_err()
+    );
 }
