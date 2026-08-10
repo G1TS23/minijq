@@ -5,6 +5,9 @@ use crate::parser::Parser;
 use std::io::IsTerminal;
 use std::io::Read;
 
+#[cfg(test)]
+mod tests;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args();
 
