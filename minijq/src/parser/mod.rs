@@ -134,7 +134,7 @@ impl Parser {
                     Some('r') => '\r',
                     Some('b') => '\u{0008}',
                     Some('f') => '\u{000C}',
-                    //TODO: add support for Unicode escape
+                    Some('u') => self.parse_unicode()?,
                     Some(other) => {
                         return Err(format!("invalid escape \\{other} at position {}", self.pos));
                     }
@@ -151,6 +151,27 @@ impl Parser {
             return Err(format!("unterminated string started at {}", initial_pos));
         }
         Ok(string)
+    }
+
+    fn parse_unicode(&mut self) -> Result<char, String> {
+        //TODO: emoji
+        // \uD83D\uDE00 — un émoji. JSON encode les caractères hors du plan de base sur deux
+        // échappements consécutifs (une « paire de substitution »). char::from_u32(0xD83D)
+        // rend None, donc ton code refusera l'émoji avec « invalid code point ».
+        // Quand le code lu est entre D800 et DBFF, il faut lire l'échappement suivant et combiner les deux.
+        self.bump(); // consomme le 'u'
+        let hex: String = self
+            .chars
+            .get(self.pos..self.pos + 4)
+            .ok_or_else(|| format!("incomplete \\u escape at position {}", self.pos))?
+            .iter()
+            .collect();
+        let code = u32::from_str_radix(&hex, 16)
+            .map_err(|_| format!("invalid \\u escape {hex:?} at position {}", self.pos))?;
+        let decoded = char::from_u32(code)
+            .ok_or_else(|| format!("invalid code point U+{hex} at position {}", self.pos))?;
+        self.bump_n(3);
+        Ok(decoded)
     }
 
     fn parse_array(&mut self) -> Result<Vec<Value>, String> {

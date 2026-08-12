@@ -163,11 +163,40 @@ fn lit_string_with_escaped_backspace() {
 }
 
 #[test]
-fn lit_string_with_escaped_formfeed() {
+fn lit_string_with_escaped_form_feed() {
     assert_eq!(
         Parser::new("\"abc\\fdef\"").parse(),
         Ok(Value::String("abc\u{000C}def".to_string()))
     );
+}
+
+#[test]
+fn lit_string_with_escaped_unicode() {
+    assert_eq!(
+        Parser::new("\"\\u0041bcdef\"").parse(),
+        Ok(Value::String("Abcdef".to_string()))
+    );
+    assert_eq!(
+        Parser::new("\"\\ubcdef\"").parse(),
+        Ok(Value::String("볞f".to_string()))
+    );
+    assert_eq!(
+        Parser::new("\"\\u01bcdef\"").parse(),
+        Ok(Value::String("Ƽdef".to_string()))
+    );
+    assert_eq!(
+        Parser::new("\"\\u263A\"").parse(),
+        Ok(Value::String("☺".to_string()))
+    );
+}
+
+#[test]
+fn lit_string_with_wrong_unicode() {
+    assert!(Parser::new("\"\\u01 bcdef\"").parse().is_err());
+    assert!(Parser::new("\"\\u01\\\"").parse().is_err());
+    assert!(Parser::new("\"\\u12\"").parse().is_err());
+    assert!(Parser::new("\"\\uD800\"").parse().is_err());
+    assert!(Parser::new("\"\\uZZZZ\"").parse().is_err());
 }
 
 #[test]

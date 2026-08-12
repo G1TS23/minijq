@@ -1,6 +1,6 @@
-use std::collections::BTreeMap;
-use crate::value::Value;
 use super::*;
+use crate::value::Value;
+use std::collections::BTreeMap;
 #[test]
 fn lit_data_json() {
     let data = include_str!("tests/test_data.json");
