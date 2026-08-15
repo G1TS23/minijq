@@ -30,6 +30,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let mut parser = Parser::new(&input);
     let value = parser.parse()?;
-    println!("parsed value :{:#?}", value);
+    println!("{}", value);
     Ok(())
 }

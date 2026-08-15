@@ -4,6 +4,7 @@ use std::collections::BTreeMap;
 #[test]
 fn lit_data_json() {
     let data = include_str!("tests/test_data.json");
+    let expect = include_str!("tests/test_expect.json").trim_end();
     let mut object: BTreeMap<String, Value> = BTreeMap::new();
     let mut array: Vec<Value> = Vec::new();
     array.push(Value::Object(BTreeMap::from([
@@ -17,5 +18,6 @@ fn lit_data_json() {
         ("admin".to_string(), Value::Bool(false)),
     ])));
     object.insert("users".to_string(), Value::Array(array));
-    assert_eq!(Parser::new(data).parse(), Ok(Value::Object(object)));
+    assert_eq!(Parser::new(data).parse(), Ok(Value::Object(object.clone())));
+    assert_eq!(expect, Value::Object(object.clone()).to_string())
 }
