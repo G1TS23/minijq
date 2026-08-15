@@ -356,10 +356,12 @@ fn lit_object_with_line_breaks() {
 
 #[test]
 fn lit_object_with_same_key() {
-    assert!(
-        Parser::new("{ \"name\":\"bob\" , \"name\":\"bob\" }")
-            .parse()
-            .is_err()
+    let mut object: BTreeMap<String, Value> = BTreeMap::new();
+    let value: Value = Value::String("alice".to_string());
+    object.insert("name".to_string(), value);
+    assert_eq!(
+        Parser::new("{ \"name\":\"bob\" , \"name\":\"alice\" }").parse(),
+        Ok(Value::Object(object))
     );
 }
 
