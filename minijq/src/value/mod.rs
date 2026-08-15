@@ -101,7 +101,7 @@ impl Value {
                 '\r' => string.push_str("\\r"),
                 '\u{0008}' => string.push_str("\\b"),
                 '\u{000C}' => string.push_str("\\f"),
-                c if (c as u32) < 0x20 => {
+                c if (c as u32) < 0x20 || c == '\u{007f}' => {
                     let hex = format!("\\u{:04x}", c as u32);
                     string.push_str(&hex);
                 }

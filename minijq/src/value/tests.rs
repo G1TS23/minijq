@@ -29,8 +29,8 @@ fn string_with_non_ascii_chars() {
 #[test]
 fn string_with_control_chars() {
     assert_eq!(
-        Value::String("\u{0001}def".to_string()).to_string(),
-        r#""\u0001def""#
+        Value::String("\u{0001}def\u{007f}".to_string()).to_string(),
+        r#""\u0001def\u007f""#
     );
 }
 
