@@ -247,11 +247,7 @@ impl Parser {
                     return Err(format!("unterminated Object started at {}", initial_pos));
                 }
             };
-            if object.contains_key(&key) {
-                return Err(format!("duplicate key {:?} at position {}", key, self.pos));
-            } else {
-                object.insert(key, value);
-            }
+            object.insert(key, value);
             self.skip_ws();
             match self.peek() {
                 Some(',') => {

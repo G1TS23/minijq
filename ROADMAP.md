@@ -228,7 +228,7 @@ jq . data.json > attendu.json
 diff sortie.json attendu.json    # doit être vide
 ```
 
-- [ ] le `diff` est vide → mon parser est prouvé correct face au vrai `jq`
+- [x] le `diff` est vide → mon parser est prouvé correct face au vrai `jq`
 
 ---
 
