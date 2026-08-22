@@ -205,8 +205,8 @@ l'expérience : je sais immédiatement si j'ai cassé quelque chose.
 
 **À chercher :** `impl` (attacher des méthodes à un struct), `&mut self`, `match`, `Option`, `if let`.
 
-- [ ] `cargo run -- data.json` affiche l'arbre complet avec `{:#?}`
-- [ ] une erreur de syntaxe JSON produit un message d'erreur, pas un plantage
+- [x] `cargo run -- data.json` affiche l'arbre complet avec `{:#?}`
+- [x] une erreur de syntaxe JSON produit un message d'erreur, pas un plantage
 
 ---
 

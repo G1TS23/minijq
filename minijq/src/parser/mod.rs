@@ -54,6 +54,19 @@ impl Parser {
 
     pub(crate) fn parse(&mut self) -> Result<Value, String> {
         self.skip_ws();
+        let value = self.parse_step()?;
+        self.skip_ws();
+        if let Some(c) = self.peek() {
+            return Err(format!(
+                "unexpected character {:?} at position {}",
+                c, self.pos
+            ));
+        }
+        Ok(value)
+    }
+
+    fn parse_step(&mut self) -> Result<Value, String> {
+        self.skip_ws();
         let value = match self.peek() {
             Some('n') => {
                 self.eat(NULL)?;
@@ -189,7 +202,7 @@ impl Parser {
             None => return Err(format!("unterminated array started at {}", initial_pos)),
         }
         loop {
-            array.push(self.parse()?);
+            array.push(self.parse_step()?);
             self.skip_ws();
             match self.peek() {
                 Some(']') => {
@@ -240,7 +253,7 @@ impl Parser {
                 Some(':') => {
                     self.bump();
                     self.skip_ws();
-                    self.parse()?
+                    self.parse_step()?
                 }
                 Some(_) => return Err(format!("expected ':' at position {}", self.pos)),
                 None => {
