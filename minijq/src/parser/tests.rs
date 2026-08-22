@@ -421,3 +421,14 @@ fn lit_with_malformed_objects() {
             .is_err()
     );
 }
+
+#[test]
+fn lit_with_wrong_end_of_file() {
+    assert!(Parser::new("{}}").parse().is_err());
+    assert!(Parser::new("42  3").parse().is_err());
+    assert!(Parser::new("[]]").parse().is_err());
+    assert!(Parser::new(" [ 0 , 1 , 2 , 3 ] \n ]").parse().is_err());
+    assert!(Parser::new("{\"name\":\"bob\"}}").parse().is_err());
+    assert!(Parser::new("{}{}").parse().is_err());
+    assert!(Parser::new("{} \n null").parse().is_err());
+}
